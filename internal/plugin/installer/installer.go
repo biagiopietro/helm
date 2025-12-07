@@ -156,7 +156,7 @@ func NewForSource(source, version string) (installer Installer, err error) {
 }
 
 // FindSource determines the correct Installer for the given source.
-func FindSource(location, version string) (Installer, error) {
+func FindSource(location string, version string) (Installer, error) {
 	installer, err := existingVCSRepo(location, version)
 	if err != nil && err.Error() == "Cannot detect VCS" {
 		slog.Warn(

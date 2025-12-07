@@ -31,7 +31,8 @@ import (
 )
 
 type pluginUpdateOptions struct {
-	plugins map[string]string
+	names   []string
+	version string
 }
 
 const pluginUpdateDesc = `Update one or more Helm plugins.
@@ -72,6 +73,7 @@ func newPluginUpdateCmd(out io.Writer) *cobra.Command {
 			return o.run(out)
 		},
 	}
+	cmd.Flags().StringVar(&o.version, "version", "", "specify a version constraint. If this is not specified, the latest version is installed")
 	return cmd
 }
 
@@ -113,9 +115,9 @@ func (o *pluginUpdateOptions) run(out io.Writer) error {
 	}
 	var errorPlugins []error
 
-	for name, version := range o.plugins {
-		if found := findPlugin(installed, name); found != nil {
-			if err := updatePlugin(found, version); err != nil {
+	for _, name := range o.names {
+		if found := findPlugin(plugins, name); found != nil {
+			if err := updatePlugin(found, o.version); err != nil {
 				errorPlugins = append(errorPlugins, fmt.Errorf("failed to update plugin %s, got error (%v)", name, err))
 			} else {
 				fmt.Fprintf(out, "Updated plugin: %s\n", name)
@@ -128,13 +130,6 @@ func (o *pluginUpdateOptions) run(out io.Writer) error {
 		return errors.Join(errorPlugins...)
 	}
 	return nil
-}
-
-func parsePluginVersion(arg string) (name, version string) {
-	if i := strings.LastIndex(arg, "@"); i >= 0 {
-		return arg[:i], arg[i+1:]
-	}
-	return arg, ""
 }
 
 func updatePlugin(p plugin.Plugin, version string) error {
