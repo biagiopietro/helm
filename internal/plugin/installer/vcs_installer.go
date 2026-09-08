@@ -38,7 +38,7 @@ type VCSInstaller struct {
 	base
 }
 
-func existingVCSRepo(location string, version string) (Installer, error) {
+func existingVCSRepo(location, version string) (Installer, error) {
 	repo, err := vcs.NewRepo("", location)
 	if err != nil {
 		return nil, err
